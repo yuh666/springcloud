@@ -8,7 +8,7 @@ gen
 /.project
 /.settings/
 /.springBeans
-**/target/
+payment-8081/target/
 /.gitignore
 /user-profile-analysis.iml
 /.idea
