@@ -1,11 +1,10 @@
-package org.yuhao.springcloud.payment.model.dto;
+package org.yuhao.springcloud.common.dto.payment;
 
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.validation.constraints.NotBlank;
 
 /**
  * @author zy-user
@@ -13,8 +12,7 @@ import javax.validation.constraints.NotBlank;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class PaymentDto {
+public class PaymentReqDto {
 
-    @NotBlank(message = "serial cannot be null")
     private String serial;
 }

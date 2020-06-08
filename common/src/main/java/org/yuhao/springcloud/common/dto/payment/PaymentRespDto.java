@@ -1,4 +1,4 @@
-package org.yuhao.springcloud.payment.model.vo;
+package org.yuhao.springcloud.common.dto.payment;
 
 
 import lombok.AllArgsConstructor;
@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class PaymentVo {
+public class PaymentRespDto {
 
     private Long id;
     private String serial;

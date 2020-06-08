@@ -9,6 +9,8 @@ gen
 /.settings/
 /.springBeans
 payment-8081/target/
+common/target/
+order-80/target/
 /.gitignore
 /user-profile-analysis.iml
 /.idea
