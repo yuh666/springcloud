@@ -21,10 +21,11 @@ public class OrderController {
 
     @PostMapping("/add")
     public Object create(PaymentReqDto dto) {
+        int a = 1 / 0;
         ResponseResult<String> responseResult = restTemplate.postForObject(
                 paymentHost + "/add", dto, ResponseResult.class);
-        if(!responseResult.isSuccess()){
-            return ResponseResult.fail(1,"fail");
+        if (!responseResult.isSuccess()) {
+            return ResponseResult.fail(1, "fail");
         }
         return ResponseResult.success(responseResult.getData());
     }
@@ -34,8 +35,8 @@ public class OrderController {
         ResponseResult<PaymentRespDto> responseResult = restTemplate.getForObject(
                 paymentHost + "/get/" + id,
                 ResponseResult.class);
-        if(!responseResult.isSuccess()){
-            return ResponseResult.fail(1,"fail");
+        if (!responseResult.isSuccess()) {
+            return ResponseResult.fail(1, "fail");
         }
         return ResponseResult.success(responseResult.getData());
     }
