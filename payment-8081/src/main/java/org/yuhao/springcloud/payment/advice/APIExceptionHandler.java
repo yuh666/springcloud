@@ -1,4 +1,4 @@
-package org.yuhao.springcloud.order.advice;
+package org.yuhao.springcloud.payment.advice;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.bind.BindException;
