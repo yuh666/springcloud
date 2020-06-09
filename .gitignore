@@ -8,9 +8,12 @@ gen
 /.project
 /.settings/
 /.springBeans
-payment-8081/target/
+payment8001/target/
+payment8002/target/
 common/target/
-order-80/target/
+order80/target/
+eureka-server7001/target/
+eureka-server7002/target/
 /.gitignore
 /user-profile-analysis.iml
 /.idea
