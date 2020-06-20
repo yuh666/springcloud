@@ -13,8 +13,6 @@
         <module>payment8001</module>
         <module>payment8002</module>
         <module>order80</module>
-        <module>eureka-server7001</module>
-        <module>eureka-server7002</module>
     </modules>
     <packaging>pom</packaging>
 
@@ -55,24 +53,6 @@
                 <version>2.1.0.RELEASE</version>
                 <type>pom</type>
                 <scope>import</scope>
-            </dependency>
-            <!--mysql-->
-            <dependency>
-                <groupId>mysql</groupId>
-                <artifactId>mysql-connector-java</artifactId>
-                <version>${mysql.version}</version>
-                <scope>runtime</scope>
-            </dependency>
-            <dependency>
-                <groupId>com.alibaba</groupId>
-                <artifactId>druid-spring-boot-starter</artifactId>
-                <version>${druid.version}</version>
-            </dependency>
-            <!-- mybatis -->
-            <dependency>
-                <groupId>org.mybatis.spring.boot</groupId>
-                <artifactId>mybatis-spring-boot-starter</artifactId>
-                <version>${mybatis.spring.boot.version}</version>
             </dependency>
             <!--junit-->
             <dependency>

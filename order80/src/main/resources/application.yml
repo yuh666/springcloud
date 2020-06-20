@@ -7,11 +7,7 @@ server:
 spring:
   application:
     name: order-service
-
-
-eureka:
-  client:
-    register-with-eureka: true
-    fetch-registry: true
-    service-url:
-      defaultZone: http://127.0.0.1:7001/eureka,http://127.0.0.1:7002/eureka
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 106.12.15.56:8848
