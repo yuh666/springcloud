@@ -4,17 +4,17 @@ import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-public class IdleChecker {
+public class TTLChecker {
 
 
-    private int idleTime;
+    private int maxExpireTime;
     private Set<String>[] buckets;
     private Map<String, Integer> indexMap = new HashMap<>();
 
 
-    public IdleChecker(int idleTime) {
-        this.idleTime = idleTime;
-        buckets = new Set[idleTime + 2];
+    public TTLChecker(int maxExpireTime) {
+        this.maxExpireTime = maxExpireTime;
+        buckets = new Set[maxExpireTime + 2]; // 防止首尾相接
         for (int i = 0; i < buckets.length; i++) {
             buckets[i] = new HashSet<>();
         }
@@ -33,22 +33,26 @@ public class IdleChecker {
     }
 
 
-    public void heartBeat(String key) {
+    public void heartBeat(String key, int expireTime) {
+        if (expireTime > maxExpireTime) {
+            throw new IllegalArgumentException("expireTime is too large");
+        }
         Integer oldIndex = indexMap.get(key);
         if (oldIndex != null) {
             buckets[oldIndex].remove(key);
         }
-        int index = (int) (System.currentTimeMillis() / 1000 + idleTime) % buckets.length;
+        int index = (int) (System.currentTimeMillis() / 1000 + expireTime) % buckets.length;
         buckets[index].add(key);
         System.out.println(key + " => " + index);
         indexMap.put(key, index);
     }
 
     public static void main(String[] args) throws InterruptedException {
-        IdleChecker idleChecker = new IdleChecker(1);
+        TTLChecker idleChecker = new TTLChecker(5);
         while (true) {
-            idleChecker.heartBeat("abc");
-            Thread.sleep(500);
+            idleChecker.heartBeat("abc", 1);
+            //Thread.sleep(500);// 不过期
+            Thread.sleep(1500);// 过期
         }
     }
 
