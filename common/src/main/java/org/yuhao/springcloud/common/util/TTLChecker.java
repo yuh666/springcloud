@@ -1,4 +1,4 @@
-package org.yuhao.springcloud.order.util;
+package org.yuhao.springcloud.common.util;
 
 import java.util.*;
 import java.util.concurrent.Executors;
