@@ -13,10 +13,10 @@ import java.util.concurrent.TimeUnit;
 public class FastLeaderElection extends Thread {
 
     static class Vote {
-        int sid;
-        private int proposalSid;
-        private int proposalEpoch;
-        private int proposalZxid;
+        int sid; //投票者的id
+        private int proposalSid; // 投的节点id
+        private int proposalEpoch; // 投的节点的epoch
+        private int proposalZxid; // 投的节点的zxid
 
         public Vote(int sid, int proposalSid, int proposalEpoch, int proposalZxid) {
             this.sid = sid;

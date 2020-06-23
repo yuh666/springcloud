@@ -5,6 +5,5 @@ spring:
   application:
     name: payment-service
   cloud:
-    nacos:
-      discovery:
-        server-addr: 106.12.15.56:8848
+    zookeeper:
+      connect-string: 106.12.15.56:2181
