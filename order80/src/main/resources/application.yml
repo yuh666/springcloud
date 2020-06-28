@@ -10,3 +10,20 @@ spring:
   cloud:
     zookeeper:
       connect-string: 106.12.15.56:2181
+
+
+feign:
+  hystrix:
+    enabled: true
+
+
+hystrix:
+  command:
+    default:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 1000
+        circuitBreaker:
+          requestVolumeThreshold: 4
+

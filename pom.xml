@@ -13,6 +13,7 @@
         <module>payment8001</module>
         <module>payment8002</module>
         <module>order80</module>
+        <module>hystrix-dashboard9001</module>
     </modules>
     <packaging>pom</packaging>
 
