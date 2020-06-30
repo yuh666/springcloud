@@ -15,11 +15,6 @@ public class PaymentController implements PaymentService {
     @Override
     @RequestMapping("/lb")
     public String lb() {
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
         return "port: " + port;
     }
 
