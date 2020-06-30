@@ -19,30 +19,22 @@ public class MetricStream {
      */
     private CircuitBreaker breaker;
 
+    /**
+     * bucket时间跨度
+     */
     private long bucketTimeSpanInMills;
 
     /**
-     * 最少请求数
-     */
-    private int minRequestThreshold;
-
-    /**
-     * 熔断失败比例
-     */
-    private int failPercentThreshold;
-
-
-    /**
+     * /**
      * 读写锁
      * 保证buckets的原子性
      */
     private ReadWriteLock lock = new ReentrantReadWriteLock();
 
     public MetricStream(int bucketLength, long bucketTimeSpanInMills, int minRequestThreshold,
-            int failPercentThreshold, int halfOPenWindow) {
-        this.breaker = new CircuitBreaker(halfOPenWindow);
-        this.minRequestThreshold = minRequestThreshold;
-        this.failPercentThreshold = failPercentThreshold;
+            int failPercentThreshold, int halfOpenWindow) {
+        this.breaker = new CircuitBreaker(halfOpenWindow, minRequestThreshold,
+                failPercentThreshold);
         this.bucketTimeSpanInMills = bucketTimeSpanInMills;
         this.array = new BucketCircularArray(bucketLength, bucketTimeSpanInMills);
     }
@@ -80,10 +72,11 @@ public class MetricStream {
      * @return
      */
     private Bucket getCurrentBucket() {
+        Bucket bucket;
         lock.readLock().lock();
         long now = System.currentTimeMillis();
         try {
-            Bucket bucket = array.tail();
+            bucket = array.tail();
             // 如果存在并且满足此刻的时间
             if (bucket != null && bucket.startTime + bucketTimeSpanInMills >= now) {
                 return bucket;
@@ -93,40 +86,24 @@ public class MetricStream {
         }
         // 不满足要新建
         lock.writeLock().lock();
+        boolean added = false;
         try {
             //double check
-            Bucket bucket = array.tail();
+            bucket = array.tail();
             // 如果存在并且满足此刻的时间
             if (bucket != null && bucket.startTime + bucketTimeSpanInMills >= now) {
                 return bucket;
             }
             // 只能新建了
-            Bucket newBucket = new Bucket(now);
-            array.addBucket(newBucket);
-            // 统计
-            tryOpen();
-            return newBucket;
+            bucket = new Bucket(now);
+            array.addBucket(bucket);
+            added = true;
         } finally {
             lock.writeLock().unlock();
         }
-    }
-
-    private void tryOpen() {
-        Bucket[] buckets = array.toArray();
-        int sum = 0, success = 0, fail = 0;
-        for (Bucket bucket : buckets) {
-            int failCount = bucket.fail.get();
-            int successCount = bucket.success.get();
-            int timeoutCount = bucket.timeout.get();
-            sum += failCount + successCount + timeoutCount;
-            success += successCount;
-            fail += failCount + timeoutCount;
+        if (added) {
+            breaker.tryOpen(array.toArray());
         }
-        int failPercent = (int) ((double) fail / sum * 100);
-        if (failPercent >= this.failPercentThreshold) {
-            breaker.open();
-        }
+        return bucket;
     }
-
-
 }
