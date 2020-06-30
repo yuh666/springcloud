@@ -6,7 +6,7 @@ package org.yuhao.springcloud.common.util.metric;
 public class Main {
 
     public static void main(String[] args) throws InterruptedException {
-        MetricStream metricStream = new MetricStream(10, 1000, 10, 50, 2);
+        MetricStream metricStream = new MetricStream(10, 1000, 10, 50, 2000);
         for (int i = 0; i < 1000; i++) {
             metricStream.addEvent(RequestEvent.FAIL);
             Thread.sleep(500);
