@@ -52,6 +52,9 @@ public class CircuitBreaker {
     }
 
     public boolean tryOpen(Bucket[] buckets) {
+        /**
+         * 计算成功率
+         */
         int sum = 0, fail = 0;
         for (Bucket bucket : buckets) {
             int failCount = bucket.fail.get();
@@ -65,6 +68,7 @@ public class CircuitBreaker {
         }
         int failPercent = (int) ((double) fail / sum * 100);
         if (failPercent >= this.failPercentThreshold) {
+            // 将断路器打开
             if (open.compareAndSet(false, true)) {
                 halfOpenStart.set(System.currentTimeMillis());
                 return true;
@@ -73,10 +77,13 @@ public class CircuitBreaker {
         return false;
     }
 
+    /**
+     * 是否允许半开
+     */
     private boolean allowHalfOpenRequest() {
         long closeTime = this.halfOpenStart.get();
         long now = System.currentTimeMillis();
-        if (open.get() || now - halfOpenSleepTime > closeTime) {
+        if (open.get() && now - halfOpenSleepTime > closeTime) {
             return this.halfOpenStart.compareAndSet(closeTime, now);
         }
         return false;
