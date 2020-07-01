@@ -1,0 +1,8 @@
+org/yuhao/springcloud/order/config/RestTemplateConfig.class
+org/yuhao/springcloud/order/OrderMain81.class
+org/yuhao/springcloud/order/config/ServletConfig.class
+org/yuhao/springcloud/order/service/PaymentClient$PaymentClientFallback.class
+org/yuhao/springcloud/order/controller/OrderController.class
+org/yuhao/springcloud/order/advice/APIExceptionHandler.class
+org/yuhao/springcloud/order/service/PaymentClient.class
+org/yuhao/springcloud/order/ribbon/RibbonMain.class
