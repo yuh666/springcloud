@@ -11,6 +11,9 @@ public class Main {
             metricStream.addEvent(RequestEvent.FAIL);
             Thread.sleep(500);
             System.out.println(metricStream.allowRequest());
+            if(metricStream.allowRequest()){
+                metricStream.addEvent(RequestEvent.SUCCESS);
+            }
         }
     }
 }

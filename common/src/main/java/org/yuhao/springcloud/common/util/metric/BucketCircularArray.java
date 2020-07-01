@@ -53,6 +53,9 @@ public class BucketCircularArray {
         incrementTail();
     }
 
+    /**
+     * 停机归零
+     */
     public void reset() {
         for (Bucket bucket : buckets) {
             if (bucket != null) {
@@ -61,6 +64,9 @@ public class BucketCircularArray {
         }
     }
 
+    /**
+     * 取正在写入的bucket
+     */
     public Bucket tail() {
         if (dataLength == 0) {
             //没数据
@@ -75,6 +81,9 @@ public class BucketCircularArray {
         return buckets[(head + dataLength - 1) % bucketLength];
     }
 
+    /**
+     * 取出所有统计的bucket
+     */
     public Bucket[] toArray() {
         Bucket[] array = new Bucket[0];
         if (dataLength == 0) {
@@ -91,7 +100,9 @@ public class BucketCircularArray {
     }
 
 
-
+    /**
+     * 更新索引
+     */
     private void incrementTail() {
         tail = (tail + 1) % bucketLength;
         if (dataLength == bucketLength) {
