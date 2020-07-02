@@ -13,8 +13,6 @@ import reactor.core.publisher.Mono;
 
 
 
-@Component
-@Order(-1)
 public class LoginFilter implements GlobalFilter {
 
     @Override

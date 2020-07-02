@@ -1,7 +1,0 @@
-/Users/yss/Desktop/develop/java/learn/springcloud/order81/src/main/java/org/yuhao/springcloud/order/OrderMain81.java
-/Users/yss/Desktop/develop/java/learn/springcloud/order81/src/main/java/org/yuhao/springcloud/order/config/ServletConfig.java
-/Users/yss/Desktop/develop/java/learn/springcloud/order81/src/main/java/org/yuhao/springcloud/order/controller/OrderController.java
-/Users/yss/Desktop/develop/java/learn/springcloud/order81/src/main/java/org/yuhao/springcloud/order/advice/APIExceptionHandler.java
-/Users/yss/Desktop/develop/java/learn/springcloud/order81/src/main/java/org/yuhao/springcloud/order/config/RestTemplateConfig.java
-/Users/yss/Desktop/develop/java/learn/springcloud/order81/src/main/java/org/yuhao/springcloud/order/ribbon/RibbonMain.java
-/Users/yss/Desktop/develop/java/learn/springcloud/order81/src/main/java/org/yuhao/springcloud/order/service/PaymentClient.java

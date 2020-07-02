@@ -8,8 +8,9 @@ spring:
   application:
     name: order-service
   cloud:
-    zookeeper:
-      connect-string: 106.12.15.56:2181
+    nacos:
+      discovery:
+        server-addr: 106.12.15.56:8848
 
 
 feign:
