@@ -1,6 +1,8 @@
 package org.yuhao.springcloud.common.util;
 
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -83,17 +85,19 @@ public class TimeWheel {
         }
     }
 
-    public static void main(String[] args) throws InterruptedException {
-        ExecutorService executorService = Executors.newFixedThreadPool(1);
-        TimeWheel timeWheel = new TimeWheel(100, executorService);
-        timeWheel.start();
-        timeWheel.addTask(System.currentTimeMillis() / 1000 + 3, () -> {
-            System.out.println("do at " + System.currentTimeMillis() / 1000);
-        });
-        System.out.println("add at " + System.currentTimeMillis() / 1000);
-        Thread.sleep(5000);
-        timeWheel.stop();
-        executorService.shutdown();
+    public static void main(String[] args) throws InterruptedException, UnknownHostException {
+//        ExecutorService executorService = Executors.newFixedThreadPool(1);
+//        TimeWheel timeWheel = new TimeWheel(100, executorService);
+//        timeWheel.start();
+//        timeWheel.addTask(System.currentTimeMillis() / 1000 + 3, () -> {
+//            System.out.println("do at " + System.currentTimeMillis() / 1000);
+//        });
+//        System.out.println("add at " + System.currentTimeMillis() / 1000);
+//        Thread.sleep(5000);
+//        timeWheel.stop();
+//        executorService.shutdown();
+        InetAddress localHost = InetAddress.getLocalHost();
+        System.out.println(localHost.getHostAddress());
     }
 
 

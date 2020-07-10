@@ -11,6 +11,26 @@ spring:
     nacos:
       discovery:
         server-addr: 106.12.15.56:8848
+    stream:
+      binders:
+        defaultRabbit:
+          type: rabbit
+          environment:
+            spring:
+              rabbitmq:
+                host: 106.12.15.56
+                port: 5672
+                username: admin
+                password: admin
+                virtual-host: /
+      defaultBinder: defaultRabbit
+      default:
+        content-type: application/json
+        binder: defaultRabbit
+      bindings:
+        orderOutput:
+          destination: order
+          group: order-service
 
 
 feign:
