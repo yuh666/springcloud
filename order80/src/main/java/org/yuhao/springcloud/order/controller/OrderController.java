@@ -8,6 +8,9 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.yuhao.springcloud.order.config.Stream;
 import org.yuhao.springcloud.order.service.PaymentClient;
+
+import java.util.HashMap;
+
 @RestController
 @Validated
 @RequestMapping("/order")
@@ -29,7 +32,9 @@ public class OrderController {
 
     @RequestMapping("/mq")
     public Object mq() {
-        source.orderOutput().send(MessageBuilder.withPayload("Hello").build());
+        HashMap<String, String> map = new HashMap<>();
+        map.put("a","b");
+        source.orderOutput().send(MessageBuilder.withPayload(map).build());
         return "success";
     }
 
