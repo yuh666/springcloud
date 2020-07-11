@@ -3,6 +3,7 @@ package org.yuhao.springcloud.order.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -14,7 +15,11 @@ import java.util.HashMap;
 @RestController
 @Validated
 @RequestMapping("/order")
+@RefreshScope
 public class OrderController {
+
+    @Value("${order.ratelimit}")
+    private Integer rate;
 
     @Value("${server.port}")
     private Integer port;
@@ -33,9 +38,14 @@ public class OrderController {
     @RequestMapping("/mq")
     public Object mq() {
         HashMap<String, String> map = new HashMap<>();
-        map.put("a","b");
+        map.put("a", "b");
         source.orderOutput().send(MessageBuilder.withPayload(map).build());
         return "success";
+    }
+
+    @RequestMapping("/rate")
+    public Object rate() {
+        return rate;
     }
 
 }

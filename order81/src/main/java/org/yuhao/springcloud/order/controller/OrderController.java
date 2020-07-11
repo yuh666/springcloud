@@ -1,6 +1,7 @@
 package org.yuhao.springcloud.order.controller;
 
 
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,11 +15,15 @@ import java.util.HashMap;
 @RestController
 @Validated
 @RequestMapping("/order")
+@RefreshScope
 public class OrderController {
 
 
     @Value("${server.port}")
     private Integer port;
+
+    @Value("${order.ratelimit}")
+    private Integer rate;
 
     @Autowired
     private PaymentClient paymentClient;
@@ -37,6 +42,11 @@ public class OrderController {
         map.put("a","b");
         source.orderOutput().send(MessageBuilder.withPayload(map).build());
         return "success";
+    }
+
+    @RequestMapping("/rate")
+    public Object rate() {
+        return rate;
     }
 
 }

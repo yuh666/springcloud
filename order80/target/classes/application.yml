@@ -3,8 +3,6 @@ server:
 
 
 spring:
-  application:
-    name: order-service
   zipkin:
     base-url: http://106.12.15.56:9411
   sleuth:
