@@ -7,11 +7,6 @@ server:
 spring:
   application:
     name: order-service
-  zipkin:
-    base-url: http://106.12.15.56:9411
-  sleuth:
-    sampler:
-      percentage: 1.0
   cloud:
     nacos:
       discovery:
@@ -53,3 +48,8 @@ hystrix:
         circuitBreaker:
           requestVolumeThreshold: 4
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'

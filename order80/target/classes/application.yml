@@ -9,6 +9,9 @@ spring:
     sampler:
       percentage: 1.0
   cloud:
+    sentinel:
+      transport:
+        dashboard: 106.12.15.56:8280
     nacos:
       discovery:
         server-addr: 106.12.15.56:8848

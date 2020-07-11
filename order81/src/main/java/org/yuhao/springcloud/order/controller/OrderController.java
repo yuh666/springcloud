@@ -22,9 +22,6 @@ public class OrderController {
     @Value("${server.port}")
     private Integer port;
 
-    @Value("${order.ratelimit}")
-    private Integer rate;
-
     @Autowired
     private PaymentClient paymentClient;
 
@@ -42,11 +39,6 @@ public class OrderController {
         map.put("a","b");
         source.orderOutput().send(MessageBuilder.withPayload(map).build());
         return "success";
-    }
-
-    @RequestMapping("/rate")
-    public Object rate() {
-        return rate;
     }
 
 }

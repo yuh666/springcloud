@@ -18,9 +18,6 @@ import java.util.HashMap;
 @RefreshScope
 public class OrderController {
 
-    @Value("${order.ratelimit}")
-    private Integer rate;
-
     @Value("${server.port}")
     private Integer port;
 
@@ -41,11 +38,6 @@ public class OrderController {
         map.put("a", "b");
         source.orderOutput().send(MessageBuilder.withPayload(map).build());
         return "success";
-    }
-
-    @RequestMapping("/rate")
-    public Object rate() {
-        return rate;
     }
 
 }
