@@ -3,15 +3,9 @@ server:
 
 
 spring:
-  zipkin:
-    base-url: http://106.12.15.56:9411
-  sleuth:
-    sampler:
-      percentage: 1.0
+  application:
+    name: order-service
   cloud:
-    sentinel:
-      transport:
-        dashboard: 106.12.15.56:8280
     nacos:
       discovery:
         server-addr: 106.12.15.56:8848
@@ -36,7 +30,6 @@ spring:
           destination: order
           group: order-service
 
-
 feign:
   hystrix:
     enabled: true
@@ -52,3 +45,8 @@ hystrix:
         circuitBreaker:
           requestVolumeThreshold: 4
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'

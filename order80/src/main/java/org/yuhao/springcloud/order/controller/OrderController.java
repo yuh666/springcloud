@@ -1,6 +1,8 @@
 package org.yuhao.springcloud.order.controller;
 
 
+import com.ctrip.framework.apollo.model.ConfigChangeEvent;
+import com.ctrip.framework.apollo.spring.annotation.ApolloConfigChangeListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
@@ -10,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import org.yuhao.springcloud.order.config.Stream;
 import org.yuhao.springcloud.order.service.PaymentClient;
 
+import javax.swing.event.ChangeEvent;
 import java.util.HashMap;
 
 @RestController
@@ -17,6 +20,9 @@ import java.util.HashMap;
 @RequestMapping("/order")
 @RefreshScope
 public class OrderController {
+
+//    @Value("${rate}")
+//    private Integer rate;
 
     @Value("${server.port}")
     private Integer port;
@@ -39,5 +45,15 @@ public class OrderController {
         source.orderOutput().send(MessageBuilder.withPayload(map).build());
         return "success";
     }
+
+//    @RequestMapping("/rate")
+//    public Object rate() {
+//        return rate;
+//    }
+//
+//    @ApolloConfigChangeListener
+//    public void onChange(ConfigChangeEvent event){
+//        System.out.println(event);
+//    }
 
 }

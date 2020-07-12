@@ -30,7 +30,6 @@ spring:
           destination: order
           group: order-service
 
-
 feign:
   hystrix:
     enabled: true
