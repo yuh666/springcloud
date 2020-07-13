@@ -1,6 +1,6 @@
 package org.yuhao.springcloud.order;
 
-import com.ctrip.framework.apollo.spring.annotation.EnableApolloConfig;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.circuitbreaker.EnableCircuitBreaker;
@@ -16,7 +16,6 @@ import java.util.Enumeration;
 
 
 @SpringBootApplication
-//@EnableApolloConfig
 @EnableDiscoveryClient
 @EnableFeignClients
 @EnableCircuitBreaker
