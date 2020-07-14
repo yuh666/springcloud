@@ -75,28 +75,33 @@ public class SignCheckAspect {
         for (String checkField : checkFields) {
             int dotIndex = checkField.indexOf(".");
             if (dotIndex > -1) {
-                extractParam(checkField, paramMap.get(checkField.substring(0, dotIndex)), params);
+                extractParamField(checkField.substring(dotIndex + 1),
+                        paramMap.get(checkField.substring(0, dotIndex)), params);
             } else {
-                extractParam(checkField, paramMap.get(checkField), params);
+                params.put(checkField, paramMap.get(checkField));
             }
         }
         return params;
     }
 
 
-    private static void extractParam(String name, Object val,
+    private static void extractParamField(String name, Object val,
             Map<String, Object> result) throws NoSuchFieldException, IllegalAccessException {
-        int dotIndex = name.indexOf(".");
-        if (dotIndex == -1) {
+        if (StringUtils.isBlank(name)) {
             result.put(name, val);
             return;
         }
-        String thisName = name.substring(0, dotIndex);
-        String nextName = name.substring(dotIndex + 1);
+        int dotIndex = name.indexOf(".");
+        String nextName = "";
+        if (dotIndex == -1) {
+            nextName = "";
+        } else {
+            nextName = name.substring(dotIndex + 1);
+        }
 
-        Field field = val.getClass().getField(thisName);
+        Field field = val.getClass().getField(name);
         field.setAccessible(true);
-        extractParam(nextName, field.get(val), result);
+        extractParamField(nextName, field.get(val), result);
     }
 
     private static Map<String, Object> makePair(String[] parameterNames, Object[] args) {
@@ -146,9 +151,9 @@ public class SignCheckAspect {
 
     public static void main(String[] args) {
         HashMap<String, String> map = new HashMap<>();
-        map.put("a","1");
-        map.put("b","2");
-        map.put("c","3");
+        map.put("a", "1");
+        map.put("b", "2");
+        map.put("c", "3");
         String sign = sign(map, "abc");
         System.out.println(sign);
     }
