@@ -7,11 +7,13 @@ import org.springframework.data.redis.connection.RedisStringCommands;
 import org.springframework.data.redis.connection.ReturnType;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.data.redis.core.types.Expiration;
 
 import java.util.Arrays;
 import java.util.UUID;
+import java.util.concurrent.locks.LockSupport;
 
 /**
  * Redis实现的分布式锁
@@ -29,15 +31,14 @@ public class RedisDistributeLock implements DistributeLock {
     /**
      * Redis操作入口
      */
-    private RedisTemplate<String, String> redisTemplate;
+    private StringRedisTemplate redisTemplate;
 
     /**
      * 解锁CAS脚本
      */
     private DefaultRedisScript<Integer> script;
 
-    public RedisDistributeLock(
-            RedisTemplate<String, String> redisTemplate) {
+    public RedisDistributeLock(StringRedisTemplate redisTemplate) {
         this.redisTemplate = redisTemplate;
         initScript();
     }
@@ -48,17 +49,17 @@ public class RedisDistributeLock implements DistributeLock {
         long start = System.currentTimeMillis();
         String value = UUID.randomUUID().toString().replace("-", "");
         do {
-            redisTemplate.execute((RedisCallback<Boolean>) redisConnection -> {
+            boolean lock = redisTemplate.execute((RedisCallback<Boolean>) redisConnection -> {
                 Boolean set = redisConnection.set(key.getBytes(), value.getBytes(),
                         Expiration.milliseconds(ttl),
                         RedisStringCommands.SetOption.SET_IF_ABSENT);
-                if (set != null && set) {
-                    lockValues.set(value);
-                    return true;
-                }
-                return false;
+                return set != null && set;
             });
-
+            if (lock) {
+                lockValues.set(value);
+                return true;
+            }
+            LockSupport.parkNanos(10 * 1000 * 1000);
         } while (System.currentTimeMillis() - start < lockTimeout);
         return false;
     }
@@ -70,11 +71,11 @@ public class RedisDistributeLock implements DistributeLock {
             return false;
         }
         try {
-            Integer unlock = redisTemplate.execute(
-                    (RedisCallback<Integer>) connection -> connection.evalSha(script.getSha1(),
+            Long unlock = redisTemplate.execute(
+                    (RedisCallback<Long>) connection -> connection.evalSha(script.getSha1(),
                             ReturnType.INTEGER, 1,
                             key.getBytes(), val.getBytes()));
-            return unlock != null && unlock == 1;
+            return unlock != null && unlock == 1L;
         } finally {
             lockValues.remove();
         }
