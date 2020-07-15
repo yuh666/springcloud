@@ -22,16 +22,11 @@ public @interface SignCheck {
     /**
      * 签名秘钥
      */
-    String signKey();
+    String secretKey();
 
     /**
      * 请求参数中签名结果字段
      */
     String signField() default "sign";
-
-    /**
-     * 字段为空不参与校验
-     */
-    boolean skipWhenNull() default true;
 
 }

@@ -1,5 +1,6 @@
 package org.yuhao.springcloud.order.aspect;
 
+import com.google.gson.internal.$Gson$Preconditions;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -9,6 +10,8 @@ import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 import java.io.UnsupportedEncodingException;
@@ -29,6 +32,8 @@ public class SignCheckAspect {
 
     private static final Logger LOG = LoggerFactory.getLogger(SignCheckAspect.class);
 
+    @Autowired
+    Environment env;
 
     @Pointcut("@annotation(org.yuhao.springcloud.order.aspect.SignCheck)")
     private void pointCutMethod() {
@@ -42,11 +47,11 @@ public class SignCheckAspect {
             Method method = signature.getMethod();
             // 提取注解
             SignCheck annotation = method.getAnnotation(SignCheck.class);
-            // 如果没有配置校验字段或者没有秘钥，直接跳过检测
-            if (annotation.checkFields().length == 0 || StringUtils.isBlank(
-                    annotation.signField()) || StringUtils.isBlank(annotation.signKey())) {
+            // 校验
+            if (!checkEnv(annotation)) {
                 return pjp.proceed();
             }
+
             // 取原始参数
             String[] parameterNames = signature.getParameterNames();
             Object[] args = pjp.getArgs();
@@ -56,33 +61,61 @@ public class SignCheckAspect {
             // 检查传入的签名结果
             Object signResult = paramMap.get(signField);
             if (signResult == null) {
+                LOG.error("sign check, request signResult is null!");
                 return "sign failed";
             }
             paramMap.remove(signField);
 
             // 取出最终的的参数
             Map<String, Object> params = extractParams(paramMap, annotation.checkFields());
-            if (annotation.skipWhenNull()) {
-                // 过滤掉空的
-                params.entrySet().removeIf(next -> next.getValue() == null);
+            if (params.isEmpty()) {
+                LOG.error("sign check, all params are null!");
+                return "sign failed";
             }
+
             //转成string
             HashMap<String, String> paramsStrMap = new HashMap<>(params.size());
             for (Map.Entry<String, Object> entry : params.entrySet()) {
                 paramsStrMap.put(entry.getKey(), entry.getValue().toString());
             }
             // 签名
-            String newSign = sign(paramsStrMap, annotation.signKey());
+            String newSign = sign(paramsStrMap, env.getProperty(annotation.secretKey()));
             if (newSign.equals(signResult)) {
                 //对比
                 return pjp.proceed();
             }
             return "sign failed";
         } catch (Exception e) {
-            //TODO LOG
-            // 异常直接放过去
+            LOG.error("sign check exception,skipped!", e);
             return pjp.proceed();
         }
+    }
+
+    /**
+     * 校验加密参数
+     *
+     * @param annotation 加密参数注解
+     * @return 是否可用
+     */
+    private boolean checkEnv(SignCheck annotation) {
+        if (StringUtils.isBlank(annotation.secretKey())) {
+            LOG.warn("sign check,secretKey not exist,skipped!");
+            return false;
+        }
+        if (annotation.checkFields().length == 0) {
+            LOG.warn("sign check,checkFields is Empty,skipped!");
+            return false;
+        }
+        if (StringUtils.isBlank(annotation.signField())) {
+            LOG.warn("sign check,signField not exist,skipped!");
+            return false;
+        }
+        String secretProperty = env.getProperty(annotation.secretKey());
+        if (StringUtils.isBlank(secretProperty)) {
+            LOG.warn("sign check,secretProperty not exist,skipped!");
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -95,13 +128,14 @@ public class SignCheckAspect {
      * @throws IllegalAccessException 反射异常
      */
     private static Map<String, Object> extractParams(Map<String, Object> paramMap,
-                                                     String[] checkFields) throws NoSuchFieldException, IllegalAccessException {
+            String[] checkFields) throws NoSuchFieldException, IllegalAccessException {
         HashMap<String, Object> params = new HashMap<>(checkFields.length);
         for (String checkField : checkFields) {
             int dotIndex = checkField.indexOf(".");
             if (dotIndex > -1) {
                 // 多级
-                extractParamField(checkField, paramMap.get(checkField.substring(0, dotIndex)), params);
+                extractParamField(checkField, paramMap.get(checkField.substring(0, dotIndex)),
+                        params);
             } else {
                 // 单级
                 extractParamField(checkField, paramMap.get(checkField), params);
@@ -121,7 +155,10 @@ public class SignCheckAspect {
      * @throws IllegalAccessException 反射异常
      */
     private static void extractParamField(String name, Object val,
-                                          Map<String, Object> result) throws NoSuchFieldException, IllegalAccessException {
+            Map<String, Object> result) throws NoSuchFieldException, IllegalAccessException {
+        if (val == null) {
+            return;
+        }
         int dotIndex = name.indexOf(".");
         if (dotIndex == -1) {
             // 最后一级
@@ -187,8 +224,8 @@ public class SignCheckAspect {
 
     public static void main(String[] args) {
         HashMap<String, String> map = new HashMap<>();
-        map.put("a", "1");
-        map.put("b", "2");
+        map.put("name", "yuhao");
+        map.put("age", "27");
         map.put("c", "3");
         String sign = sign(map, "abc");
         System.out.println(sign);

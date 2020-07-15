@@ -50,3 +50,6 @@ management:
     web:
       exposure:
         include: '*'
+
+secret:
+  key: abc
