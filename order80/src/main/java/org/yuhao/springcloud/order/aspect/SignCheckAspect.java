@@ -70,15 +70,14 @@ public class SignCheckAspect {
 
 
     private static Map<String, Object> extractParams(Map<String, Object> paramMap,
-            String[] checkFields) throws NoSuchFieldException, IllegalAccessException {
+                                                     String[] checkFields) throws NoSuchFieldException, IllegalAccessException {
         HashMap<String, Object> params = new HashMap<>(checkFields.length);
         for (String checkField : checkFields) {
             int dotIndex = checkField.indexOf(".");
             if (dotIndex > -1) {
-                extractParamField(checkField.substring(dotIndex + 1),
-                        paramMap.get(checkField.substring(0, dotIndex)), params);
+                extractParamField(checkField, paramMap.get(checkField.substring(0, dotIndex)), params);
             } else {
-                params.put(checkField, paramMap.get(checkField));
+                extractParamField(checkField, paramMap.get(checkField), params);
             }
         }
         return params;
@@ -86,22 +85,21 @@ public class SignCheckAspect {
 
 
     private static void extractParamField(String name, Object val,
-            Map<String, Object> result) throws NoSuchFieldException, IllegalAccessException {
-        if (StringUtils.isBlank(name)) {
+                                          Map<String, Object> result) throws NoSuchFieldException, IllegalAccessException {
+        int dotIndex = name.indexOf(".");
+        if (dotIndex == -1) {
             result.put(name, val);
             return;
         }
-        int dotIndex = name.indexOf(".");
-        String nextName = "";
-        if (dotIndex == -1) {
-            nextName = "";
-        } else {
-            nextName = name.substring(dotIndex + 1);
-        }
 
-        Field field = val.getClass().getField(name);
+        int nextDotIndex = name.indexOf(".", dotIndex + 1);
+        if (nextDotIndex == -1) {
+            nextDotIndex = name.length();
+        }
+        String filedName = name.substring(dotIndex + 1, nextDotIndex);
+        Field field = val.getClass().getDeclaredField(filedName);
         field.setAccessible(true);
-        extractParamField(nextName, field.get(val), result);
+        extractParamField(name.substring(dotIndex + 1), field.get(val), result);
     }
 
     private static Map<String, Object> makePair(String[] parameterNames, Object[] args) {
