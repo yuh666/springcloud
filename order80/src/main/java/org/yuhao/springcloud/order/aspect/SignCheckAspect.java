@@ -1,6 +1,5 @@
 package org.yuhao.springcloud.order.aspect;
 
-import com.google.gson.internal.$Gson$Preconditions;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -18,19 +17,28 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 签名校验切面
  * 提取注解指定的参数进行MD5，和请求中的签名结果进行比对
  * {@link org.yuhao.springcloud.order.aspect.SignCheck}
  *
- * @author zy-user
+ * @author yuhao
  */
 @Aspect
 @Component
 public class SignCheckAspect {
 
     private static final Logger LOG = LoggerFactory.getLogger(SignCheckAspect.class);
+
+    /**
+     * 缓存Field
+     * 避免反射带来的性能损失
+     * <p>
+     * class.filedName -> Field
+     */
+    private ConcurrentHashMap<String, Field> filedCache = new ConcurrentHashMap<>();
 
     @Autowired
     Environment env;
@@ -127,7 +135,7 @@ public class SignCheckAspect {
      * @throws NoSuchFieldException   反射异常
      * @throws IllegalAccessException 反射异常
      */
-    private static Map<String, Object> extractParams(Map<String, Object> paramMap,
+    private Map<String, Object> extractParams(Map<String, Object> paramMap,
             String[] checkFields) throws NoSuchFieldException, IllegalAccessException {
         HashMap<String, Object> params = new HashMap<>(checkFields.length);
         for (String checkField : checkFields) {
@@ -154,7 +162,7 @@ public class SignCheckAspect {
      * @throws NoSuchFieldException   反射异常
      * @throws IllegalAccessException 反射异常
      */
-    private static void extractParamField(String name, Object val,
+    private void extractParamField(String name, Object val,
             Map<String, Object> result) throws NoSuchFieldException, IllegalAccessException {
         if (val == null) {
             return;
@@ -172,10 +180,18 @@ public class SignCheckAspect {
         }
         // 取出下一级
         String filedName = name.substring(dotIndex + 1, nextDotIndex);
-        Field field = val.getClass().getDeclaredField(filedName);
-        field.setAccessible(true);
+        Class<?> valClass = val.getClass();
+        String fullFiledName = valClass.getName() + "." + filedName;
+        Field field = filedCache.get(fullFiledName);
+        if (field == null) {
+            field = valClass.getDeclaredField(filedName);
+            field.setAccessible(true);
+            filedCache.putIfAbsent(fullFiledName, field);
+            field = filedCache.get(fullFiledName);
+        }
         extractParamField(name.substring(dotIndex + 1), field.get(val), result);
     }
+
 
     private static Map<String, Object> makePair(String[] parameterNames, Object[] args) {
         HashMap<String, Object> pair = new HashMap<>();
@@ -186,48 +202,47 @@ public class SignCheckAspect {
     }
 
     /**
-     * 方法描述:签名字符串
-     *
-     * @param params    需要签名的参数
-     * @param appSecret 签名密钥
-     * @return
+     * 将请求参数进行签名
+     * @param params 签名参数
+     * @param appSecret 秘钥
+     * @return 签名结果
      */
     public static String sign(Map<String, String> params, String appSecret) {
-        StringBuilder valueSb = new StringBuilder();
-        params.put("appSecret", appSecret);
         // 将参数以参数名的字典升序排序
-        Map<String, String> sortParams = new TreeMap<String, String>(params);
-        Set<Map.Entry<String, String>> entrys = sortParams.entrySet();
-        // 遍历排序的字典,并拼接value1+value2......格式
-        for (Map.Entry<String, String> entry : entrys) {
-            if (org.apache.commons.lang.StringUtils.isNotBlank(entry.getValue())) {
-                valueSb.append(entry.getKey() + "=" + entry.getValue() + "&");
-            }
-        }
-        params.remove("appSecret");
-        return md5(valueSb.substring(0, valueSb.lastIndexOf("&")));
+        Map<String, String> sortParams = new TreeMap<>(params);
+        sortParams.put("appSecret", appSecret);
+        // k1=v1&k2=v2&..
+        String finalRes = sortParams.entrySet().stream()
+                .filter(entry -> StringUtils.isNotBlank(entry.getValue()))
+                .reduce("", (res, entry) -> String.format("%s%s=%s&", res, entry.getKey(),
+                        entry.getValue()), String::concat);
+        System.out.println(finalRes);
+        // 去掉最后一个&
+        return md5(finalRes.substring(0, finalRes.length() - 1));
     }
 
     /**
-     * 方法描述:将字符串MD5加码 生成32位md5码
+     * 将字符串MD5生成摘要 生成32位md5码
      *
-     * @param inStr
-     * @return
+     * @param inStr 输入串
+     * @return 摘要信息
      */
     public static String md5(String inStr) {
         try {
             return DigestUtils.md5Hex(inStr.getBytes("UTF-8"));
         } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException("MD5签名过程中出现错误");
+            throw new RuntimeException("MD5摘要过程中出现错误");
         }
     }
 
     public static void main(String[] args) {
         HashMap<String, String> map = new HashMap<>();
-        map.put("name", "yuhao");
-        map.put("age", "27");
-        map.put("c", "3");
-        String sign = sign(map, "abc");
+//        map.put("orderId", "20071221488198");
+        map.put("usr", "i3221625185");
+//        map.put("price", "50");
+//        map.put("channel", "104543");
+        map.put("gift_recharging", "66");
+        String sign = sign(map, "040f22ba9ef949babc79ad3dd8b07f58");
         System.out.println(sign);
     }
 

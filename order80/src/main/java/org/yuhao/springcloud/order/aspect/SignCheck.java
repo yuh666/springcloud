@@ -8,7 +8,7 @@ import java.lang.annotation.*;
  * 标注签名校验的元信息
  * {@link org.yuhao.springcloud.order.aspect.SignCheckAspect}
  *
- * @author zy-user
+ * @author yuhao
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)

@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * 时间轮线程调度器
  *
- * @author zy-user
+ * @author yuhao
  */
 public class TimeWheel {
 
