@@ -6,13 +6,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.env.Environment;
 import org.yuhao.springcloud.order.aspect.SignCheck;
-import org.yuhao.springcloud.order.aspect.SignCheckAspect;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.UnsupportedEncodingException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * MD5签名校验
@@ -44,19 +41,11 @@ public class MD5RequestSignMatcher implements RequestSignMatcher {
             return false;
         }
 
-        // 取校验字段
-        String[] checkFields = signCheck.checkFields();
-        HashMap<String, String> params = new HashMap<>(checkFields.length);
-        for (String checkField : checkFields) {
-            String parameter = request.getParameter(checkField);
-            if (StringUtils.isNotBlank(parameter)) {
-                params.put(checkField, parameter);
-            }
-        }
-
         // 比对签名
-        String newSign = sign(params, env.getProperty(signCheck.secretKey()));
-        if(!newSign.equals(signResult)){
+        HashMap<String, String[]> params = new HashMap<>(request.getParameterMap());
+        params.remove(signCheck.signField());
+        String newSign = signForHttpServletRequest(params, env.getProperty(signCheck.secretKey()));
+        if (!newSign.equals(signResult)) {
             LOG.error("sign check not match,request:{}, real:{}", signResult, newSign);
             return false;
         }
@@ -75,10 +64,6 @@ public class MD5RequestSignMatcher implements RequestSignMatcher {
             LOG.warn("sign check,secretKey not exist,skipped!");
             return false;
         }
-        if (annotation.checkFields().length == 0) {
-            LOG.warn("sign check,checkFields is Empty,skipped!");
-            return false;
-        }
         if (StringUtils.isBlank(annotation.signField())) {
             LOG.warn("sign check,signField not exist,skipped!");
             return false;
@@ -92,24 +77,21 @@ public class MD5RequestSignMatcher implements RequestSignMatcher {
     }
 
 
-    /**
-     * 将请求参数进行签名
-     * @param params 签名参数
-     * @param appSecret 秘钥
-     * @return 签名结果
-     */
-    public static String sign(Map<String, String> params, String appSecret) {
+    public static String signForHttpServletRequest(Map<String, String[]> params, String appSecret) {
+        StringBuilder valueSb = new StringBuilder();
+        params.put("appSecret", new String[]{appSecret});
         // 将参数以参数名的字典升序排序
-        Map<String, String> sortParams = new TreeMap<>(params);
-        sortParams.put("appSecret", appSecret);
-        // k1=v1&k2=v2&..
-        String finalRes = sortParams.entrySet().stream()
-                .filter(entry -> StringUtils.isNotBlank(entry.getValue()))
-                .reduce("", (res, entry) -> String.format("%s%s=%s&", res, entry.getKey(),
-                        entry.getValue()), String::concat);
-        System.out.println(finalRes);
-        // 去掉最后一个&
-        return md5(finalRes.substring(0, finalRes.length() - 1));
+        Map<String, String[]> sortParams = new TreeMap<>(params);
+        Set<Map.Entry<String, String[]>> entrys = sortParams.entrySet();
+        // 遍历排序的字典,并拼接value1+value2......格式
+        for (Map.Entry<String, String[]> entry : entrys) {
+            if (entry.getValue().length > 0 && org.apache.commons.lang.StringUtils.isNotBlank(
+                    entry.getValue()[0])) {
+                valueSb.append(entry.getKey() + "=" + entry.getValue()[0] + "&");
+            }
+        }
+        params.remove("appSecret");
+        return md5(valueSb.substring(0, valueSb.lastIndexOf("&")));
     }
 
     /**
@@ -124,6 +106,20 @@ public class MD5RequestSignMatcher implements RequestSignMatcher {
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException("MD5摘要过程中出现错误");
         }
+    }
+
+    public static void main(String[] args) {
+        HashMap<String, String[]> map = new HashMap<>();
+        //usr=i3221625185&imei=&gift_recharging=66&rgt=&desc=天猫&sign=4234234234234234
+
+
+        map.put("usr", new String[]{"i3221625185"});
+        map.put("gift_recharging", new String[]{"66"});
+        map.put("desc", new String[]{"天猫"});
+        String abc = signForHttpServletRequest(map, "040f22ba9ef949babc79ad3dd8b07f58");
+        System.out.println(abc);
+
+        System.out.println(UUID.randomUUID().toString().replace("-",""));
     }
 
 }

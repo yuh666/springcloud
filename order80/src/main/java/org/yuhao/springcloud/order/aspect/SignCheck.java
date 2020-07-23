@@ -6,18 +6,14 @@ import java.lang.annotation.*;
 /**
  * 签名校验注解
  * 标注签名校验的元信息
- * {@link org.yuhao.springcloud.order.aspect.SignCheckAspect}
+ *
+ * @see EnableSignCheck
  *
  * @author yuhao
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface SignCheck {
-
-    /**
-     * 参与校验的字段
-     */
-    String[] checkFields();
 
     /**
      * 签名秘钥
